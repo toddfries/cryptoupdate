@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# Copyright (c) 2016 Todd T. Fries <todd@fries.net>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+gov=$(go version)
+gov=${gov#* go}
+gov=${gov% *}
+case "$gov" in
+1.[1-3].*) echo "update!"; exit 1;;
+1.5.*) export GOVENDOREXPERIMENT=1.5;;
+esac
+
+toupdate="$@"
+
+# if no args, presume all are to be downloaded and updated
+if ! [ "$toupdate" ]; then
+	toupdate="btcsuite/btcd btcsuite/btcwallet"
+	toupdate="$toupdate decred/dcrd decred/dcrwallet"
+	toupdate="$toupdate NebulousLabs/Sia"
+fi
+
+if ! go get -v -u github.com/Masterminds/glide; then
+	echo "glide install failed, bailing!"
+	exit 1
+fi
+
+for proj in $toupdate
+do
+	glide=0
+	case "$proj" in
+	*/btcd) glide=1;;
+	*/btcwallet) glide=0;;
+	*/dcrd) glide=0;;
+	*/dcrwallet) glide=1;;
+	*/Sia) glide=0;;
+	*) echo "Unsupported project $proj"; continue;;
+	esac
+	echo "==> $glide $proj"
+
+	if [ $glide -eq 0 ]; then
+		go get -v -u github.com/$proj/...
+		continue
+	fi
+	
+	if ! [ -d $GOPATH/src/github.com/$proj ]; then
+		go get -v -u github.com/$proj/... > /dev/null 2>&1 || continue
+	fi
+	cd $GOPATH/src/github.com/$proj || continue
+	glide install
+	go install
+done
