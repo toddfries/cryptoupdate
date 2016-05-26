@@ -4,10 +4,12 @@ for which piece of which go cryptocoin project
 
 Supported projects:
 
-<quote>
- btcsuite/btcd
- btcsuite/btcwallet
- decred/dcrd
- decred/dcrwallet
- NebulousLabs/Sia
-</quote>
+o btcsuite/btcd
+
+o btcsuite/btcwallet
+
+o decred/dcrd
+
+o decred/dcrwallet
+
+o NebulousLabs/Sia
