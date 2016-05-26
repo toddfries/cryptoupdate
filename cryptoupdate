@@ -49,8 +49,8 @@ do
 	esac
 	echo "==> $glide $proj"
 
+	go get -v -u github.com/$proj/...
 	if [ $glide -eq 0 ]; then
-		go get -v -u github.com/$proj/...
 		continue
 	fi
 	
