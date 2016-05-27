@@ -49,15 +49,15 @@ do
 	esac
 	echo "==> $glide $proj"
 
-	go get -v -u github.com/$proj/...
 	if [ $glide -eq 0 ]; then
+		go get -v -u github.com/$proj/...
 		continue
 	fi
-	
 	if ! [ -d $GOPATH/src/github.com/$proj ]; then
 		go get -v -u github.com/$proj/... > /dev/null 2>&1 || continue
 	fi
 	cd $GOPATH/src/github.com/$proj || continue
+	git pull
 	glide install
 	go install ./...
 done
